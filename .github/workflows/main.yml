@@ -2,7 +2,7 @@ name: Run WhatsApp Bot
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # every 2 hours
+    - cron: '0 */2 * * *'  # runs every 2 hours
   workflow_dispatch:       # allows manual trigger
 
 jobs:
@@ -10,20 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout your repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Node.js 22 with npm cache
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: 'npm'
 
+      # 3️⃣ Install dependencies using package-lock.json
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Rebuild Sharp (optional)
+      # 4️⃣ Rebuild sharp (if your bot uses it)
+      - name: Rebuild Sharp
         run: npm rebuild sharp --platform=linux --arch=x64
 
-      - name: Run WhatsApp bot
+      # 5️⃣ Run your bot
+      - name: Start WhatsApp Bot
         run: node index.js
