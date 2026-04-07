@@ -1,34 +1,46 @@
-name: Run WhatsApp Bot
+name: Knightbot-MD Continuous Runner
 
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # runs every 2 hours
-  workflow_dispatch:       # allows manual trigger
+  workflow_dispatch:       # manual trigger only (continuous loop, cron not needed)
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    concurrency:
+      group: knightbot-md
+      cancel-in-progress: true
 
     steps:
-      # 1️⃣ Checkout your repository
-      - name: Checkout repo
+      # 1️⃣ Checkout repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js 22 with npm cache
+      # 2️⃣ Setup Node.js 22 with caching
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22
+          node-version: '22'
           cache: 'npm'
 
-      # 3️⃣ Install dependencies using package-lock.json
-      - name: Install dependencies
-        run: npm ci
+      # 3️⃣ Install dependencies (lock file preferred)
+      - name: Install Dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "⚠️ package-lock.json not found, using npm install instead"
+            npm install
+          fi
 
-      # 4️⃣ Rebuild sharp (if your bot uses it)
+      # 4️⃣ Rebuild sharp if your bot uses it
       - name: Rebuild Sharp
-        run: npm rebuild sharp --platform=linux --arch=x64
+        run: npm rebuild sharp --platform=linux --arch=x64 || true
 
-      # 5️⃣ Run your bot
-      - name: Start WhatsApp Bot
-        run: node index.js
+      # 5️⃣ Keep bot running 24/7
+      - name: Start Knightbot-MD
+        run: |
+          echo "🚀 Starting Knightbot-MD bot in 24/7 loop..."
+          while true; do
+            node index.js || echo "💥 Bot crashed, restarting in 5s..."
+            sleep 5
+          done
