@@ -1,9 +1,9 @@
 name: Run WhatsApp Bot
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: '0 */2 * * *'  # every 2 hours
+  workflow_dispatch:       # allows manual trigger
 
 jobs:
   run-bot:
@@ -11,15 +11,19 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 22
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run bot
+      - name: Rebuild Sharp (optional)
+        run: npm rebuild sharp --platform=linux --arch=x64
+
+      - name: Run WhatsApp bot
         run: node index.js
